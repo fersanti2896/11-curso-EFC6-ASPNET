@@ -33,6 +33,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IEventosDbContextService, EventosDbContextService>();
 builder.Services.AddScoped<IActualizadorObservableCollectionService, ActualizadorObservableCollectionService>();
+builder.Services.AddSingleton<Singleton>();
 
 /* Agregando AutoMapper */
 builder.Services.AddAutoMapper(typeof(Program));
