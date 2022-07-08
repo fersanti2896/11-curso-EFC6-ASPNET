@@ -4,6 +4,7 @@ ___
 1. __Tiempo de vida de los servicios.__
 2. __Instanciando el DbContext en un Singleton.__
 3. __Programación Asíncrona.__
+4. __Reciclando el DbContext.__
 
 #### Tiempo de vida de los servicios
 
@@ -35,3 +36,43 @@ El tiempo de vida del `DbContext` por defecto es `Scoped`, de esa manera un usua
     builder.Services.AddSingleton<Singleton>();
 
 #### Programación Asíncrona
+
+Es buena práctica utilizar programación asíncrona cuando realizamos operaciones I/O en ASP.NET Core. 
+
+Una operación I/O es cuando nuestro sistema se comunica con otros sistemas, por ejemplo, es cuando nuestra aplicación se comunica con una base de datos y esta operación tiene un tiempo de espera mientras transcurre ese tiempo al usar la programación asíncrona el hilo que realizó la petición es liberado y esta puede hacer otras tareas. 
+
+En programación web esto es útil, usar programación asíncrona para dar escabilidad a nuetra aplicación, esto se le conoce como escalabilidad vertical. 
+
+Es decir, se debe preferir esto:
+
+    [HttpGet]
+    public async Task<IEnumerable<Genero>> Get() {
+        return await context.Generos.ToListAsync();
+    }
+
+Que esto: 
+
+    [HttpGet]
+    public IEnumerable<Genero> Get() {
+        return context.Generos.ToList();
+    }
+
+#### Reciclando el DbContext
+
+El DbContext es un objeto rápido de instancia y eliminar, podemos reutilizar dichas instancias por toda nuestra aplicación. 
+
+Pero el `Dbcontext` para a ser entonces un servicio Singleton y no podemos inyectar servicios en el `ApplicationDbContex`.
+
+#### Factoría de DbContexts
+
+En ocasiones es posible que queramos instanciar el `DbContext` manualmente y al mismo tiempo tener su configuración centralizada en el archivo `Program.cs`. 
+
+Para eso podemos hacer uso del método `AddDbContextFactory<>();`, el cual la funcionalidad de ese método es permitir registrar una factoría a partir de la cual vamos a poder instanciar nuestro `DbContext` manualmente utilizando la configuración en `Program.cs`.
+
+Aunque también se puede hacer uso del `AddPooledDbContextFactory<>();` el cual se usa de la misma manera que el método anterior. 
+
+#### Blazor Server
+
+Normalmente, las aplicaciones web son sin estado, así dos peticiones `http` reciben dos aplicacionnes `DbContext`. 
+
+Blazor Server es un framework con estado, lo que recomienda Microsoft es que utilicemos una instancia del `DbContext` por operación, lo que nos conviene utilizar en Blazor la factoría de contextos. 
